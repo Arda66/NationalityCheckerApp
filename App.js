@@ -14,6 +14,8 @@ import {
 import axios from 'axios';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Clipboard from '@react-native-clipboard/clipboard';
+import Share from 'react-native-share';
+import EntypoIcon from 'react-native-vector-icons/Entypo';
 const BaseURL = 'https://api.nationalize.io/?name=';
 
 const App = () => {
@@ -67,6 +69,21 @@ const App = () => {
     } else Alert.alert('Your field is empty!', 'Please enter a name');
   };
 
+  const ShareMessage = text => {
+    if (searchText.length > 0) {
+      const shareOptions = {
+        title: 'Share via',
+        message: result,
+      };
+      Share.open(shareOptions)
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => {
+          err && console.log(err);
+        });
+    } else Alert.alert('Your field is empty!', 'Please enter a name');
+  };
   return (
     <SafeAreaView
       style={{
@@ -98,7 +115,6 @@ const App = () => {
                   text: 'OK',
                   onPress: () => {
                     Clipboard.setString(result);
-                    Alert.alert('Copied!');
                   },
                 },
               ],
@@ -136,37 +152,76 @@ const App = () => {
           value={searchText}
           onChangeText={text => setSearchText(text)}
         />
-        <TouchableOpacity
+        <View
           style={{
-            height: 75,
-            width: 100,
-            borderRadius: 20,
-            backgroundColor: '#afd1fa',
-            justifyContent: 'center',
-            alignItems: 'center',
-            elevation: 3,
-            bottom: '17%',
-          }}
-          onPress={() => {
-            getData();
-            Keyboard.dismiss();
+            flex: 1,
+            flexDirection: 'row',
+            padding: 15,
           }}>
-          <Text
+          <TouchableOpacity
             style={{
-              color: 'black',
-              fontWeight: 'bold',
-              fontSize: 22,
-              top: '5%',
+              height: 75,
+              width: 100,
+              borderRadius: 20,
+              backgroundColor: '#afd1fa',
+              justifyContent: 'center',
+              alignItems: 'center',
+              elevation: 3,
+              bottom: '17%',
+              right: '10%',
+            }}
+            onPress={() => {
+              getData();
+              Keyboard.dismiss();
             }}>
-            Search
-          </Text>
-          <FontAwesomeIcon
-            style={{margin: 10, bottom: '5%'}}
-            name="search"
-            size={28}
-            color="black"
-          />
-        </TouchableOpacity>
+            <Text
+              style={{
+                color: 'black',
+                fontWeight: 'bold',
+                fontSize: 22,
+                top: '5%',
+              }}>
+              Search
+            </Text>
+            <FontAwesomeIcon
+              style={{margin: 10, bottom: '5%'}}
+              name="search"
+              size={28}
+              color="black"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              height: 75,
+              width: 100,
+              borderRadius: 20,
+              backgroundColor: 'green',
+              justifyContent: 'center',
+              alignItems: 'center',
+              elevation: 3,
+              bottom: '17%',
+              left: '10%',
+            }}
+            onPress={() => {
+              ShareMessage(result);
+            }}>
+            <Text
+              style={{
+                color: 'black',
+                fontWeight: 'bold',
+                fontSize: 22,
+                top: '5%',
+              }}>
+              Share
+            </Text>
+            <EntypoIcon
+              style={{margin: 10, bottom: '5%'}}
+              name="share"
+              size={30}
+              color="black"
+            />
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
