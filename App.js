@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import {
   Alert,
   Keyboard,
@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import axios from 'axios';
@@ -24,7 +25,21 @@ const App = () => {
   const [result, setResult] = useState('');
   let tempText;
   let finalText = ' ';
+  const localInputRef = useRef < TextInput > null;
 
+  useEffect(() => {
+    const keyboardDidHideSubscription = Keyboard.addListener(
+      'keyboardDidHide',
+      keyboardDidHideCallback,
+    );
+
+    return () => {
+      keyboardDidHideSubscription?.remove();
+    };
+  }, []);
+  const keyboardDidHideCallback = () => {
+    localInputRef.current?.blur();
+  };
   const getData = async () => {
     if (searchText.length > 0) {
       try {
@@ -56,11 +71,18 @@ const App = () => {
             tempText.probability +
             '\n ';
         }
-        setResult(
-          `\tname : ${searchText}\n\t\t\t\t` +
-            'Nationality Results!\n' +
-            finalText,
-        );
+        if (finalText.includes('->')) {
+          setResult(
+            `\tname : ${searchText}\n\t\t\t\t` +
+              'Nationality Results!\n' +
+              finalText,
+          );
+        } else {
+          setResult(
+            `\tname : ${searchText}\n\t` +
+              'No results found!\n\tPlease try again.',
+          );
+        }
         console.log(finalText);
         setSearchText('');
       } catch (error) {
@@ -70,7 +92,7 @@ const App = () => {
   };
 
   const ShareMessage = text => {
-    if (searchText.length > 0) {
+    if (result.length > 0) {
       const shareOptions = {
         title: 'Share via',
         message: result,
@@ -82,7 +104,7 @@ const App = () => {
         .catch(err => {
           err && console.log(err);
         });
-    } else Alert.alert('Your field is empty!', 'Please enter a name');
+    } else Alert.alert('No data to share!', 'Please enter a name and search');
   };
   return (
     <SafeAreaView
@@ -99,6 +121,7 @@ const App = () => {
           elevation: 3,
           padding: 5,
           marginVertical: 10,
+          borderWidth: 0.1,
         }}>
         <Text
           onLongPress={() => {
@@ -112,7 +135,7 @@ const App = () => {
                   style: 'cancel',
                 },
                 {
-                  text: 'OK',
+                  text: 'Copy',
                   onPress: () => {
                     Clipboard.setString(result);
                   },
@@ -131,98 +154,110 @@ const App = () => {
           {result}
         </Text>
       </ScrollView>
-      <KeyboardAvoidingView
-        style={{
-          flex: 0.8,
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
+      <TouchableWithoutFeedback
+        onPress={() => {
+          Keyboard.dismiss();
         }}>
-        <TextInput
+        <KeyboardAvoidingView
           style={{
-            width: '85%',
-            borderColor: '#7ba6db',
-            opacity: 0.9,
-            borderWidth: 2,
-            borderRadius: 12,
-            bottom: '25%',
-            color: 'black',
-          }}
-          placeholder="Enter your name..."
-          value={searchText}
-          onChangeText={text => setSearchText(text)}
-        />
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            padding: 15,
+            flex: 0.8,
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            top: '12%',
           }}>
-          <TouchableOpacity
+          <TextInput
+            // ref={ref => {
+            //   localInputRef && (localInputRef.current = ref);
+            // }}
             style={{
-              height: 75,
-              width: 100,
-              borderRadius: 20,
-              backgroundColor: '#afd1fa',
-              justifyContent: 'center',
-              alignItems: 'center',
-              elevation: 3,
-              bottom: '17%',
-              right: '10%',
+              width: '85%',
+              borderColor: '#7ba6db',
+              opacity: 1,
+              borderWidth: 2,
+              borderRadius: 12,
+              bottom: '25%',
+              color: 'black',
+              marginVertical: 15,
             }}
-            onPress={() => {
-              getData();
-              Keyboard.dismiss();
-            }}>
-            <Text
-              style={{
-                color: 'black',
-                fontWeight: 'bold',
-                fontSize: 22,
-                top: '5%',
-              }}>
-              Search
-            </Text>
-            <FontAwesomeIcon
-              style={{margin: 10, bottom: '5%'}}
-              name="search"
-              size={28}
-              color="black"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
+            placeholder="Enter your name..."
+            placeholderTextColor={'gray'}
+            value={searchText}
+            onChangeText={text => setSearchText(text)}
+          />
+          <View
             style={{
-              height: 75,
-              width: 100,
-              borderRadius: 20,
-              backgroundColor: 'green',
-              justifyContent: 'center',
-              alignItems: 'center',
-              elevation: 3,
-              bottom: '17%',
-              left: '10%',
-            }}
-            onPress={() => {
-              ShareMessage(result);
+              flex: 1,
+              flexDirection: 'row',
+              padding: 20,
             }}>
-            <Text
+            <TouchableOpacity
               style={{
-                color: 'black',
-                fontWeight: 'bold',
-                fontSize: 22,
-                top: '5%',
+                height: 75,
+                width: 100,
+                borderRadius: 20,
+                backgroundColor: '#afd1fa',
+                justifyContent: 'center',
+                alignItems: 'center',
+                elevation: 3,
+                bottom: '17%',
+                right: '20%',
+              }}
+              onPress={() => {
+                getData();
+                Keyboard.dismiss();
               }}>
-              Share
-            </Text>
-            <EntypoIcon
-              style={{margin: 10, bottom: '5%'}}
-              name="share"
-              size={30}
-              color="black"
-            />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+              <Text
+                style={{
+                  color: 'black',
+                  fontWeight: 'bold',
+                  fontSize: 22,
+                  top: '5%',
+                }}>
+                Search
+              </Text>
+              <FontAwesomeIcon
+                style={{margin: 10, bottom: '5%'}}
+                name="search"
+                size={28}
+                color="black"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                height: 75,
+                width: 100,
+                borderRadius: 20,
+                backgroundColor: 'green',
+                justifyContent: 'center',
+                alignItems: 'center',
+                elevation: 3,
+                bottom: '17%',
+                left: '20%',
+              }}
+              onPress={() => {
+                ShareMessage(result);
+                Keyboard.dismiss();
+              }}>
+              <Text
+                style={{
+                  color: 'black',
+                  fontWeight: 'bold',
+                  fontSize: 22,
+                  top: '5%',
+                }}>
+                Share
+              </Text>
+              <EntypoIcon
+                style={{margin: 10, bottom: '5%'}}
+                name="share"
+                size={30}
+                color="black"
+              />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
