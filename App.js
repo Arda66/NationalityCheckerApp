@@ -25,8 +25,9 @@ const App = () => {
   const [result, setResult] = useState('');
   let tempText;
   let finalText = ' ';
-  const localInputRef = useRef < TextInput > null;
-
+  const localInputRef = useRef < null || TextInput > null;
+  // ctrl + shift + L ile o değişkenin olduğu herşeyi seçebilion
+  // width : '50%' vermek text için split yani altından devam et anlamına geliyor
   useEffect(() => {
     const keyboardDidHideSubscription = Keyboard.addListener(
       'keyboardDidHide',
@@ -38,7 +39,7 @@ const App = () => {
     };
   }, []);
   const keyboardDidHideCallback = () => {
-    localInputRef.current?.blur();
+    localInputRef?.current?.blur();
   };
   const getData = async () => {
     if (searchText.length > 0) {
@@ -59,10 +60,7 @@ const App = () => {
               probability:
                 (response.data.country[i].probability * 100).toFixed(1) + '%',
             };
-          } else {
-            continue;
-          }
-
+          } else continue;
           finalText =
             finalText +
             '->\t ' +
@@ -83,7 +81,6 @@ const App = () => {
               'No results found!\n\tPlease try again.',
           );
         }
-        console.log(finalText);
         setSearchText('');
       } catch (error) {
         console.log(error);
@@ -91,19 +88,15 @@ const App = () => {
     } else Alert.alert('Your field is empty!', 'Please enter a name');
   };
 
-  const ShareMessage = text => {
+  const ShareMessage = () => {
     if (result.length > 0) {
       const shareOptions = {
         title: 'Share via',
         message: result,
       };
-      Share.open(shareOptions)
-        .then(res => {
-          console.log(res);
-        })
-        .catch(err => {
-          err && console.log(err);
-        });
+      Share.open(shareOptions).catch(err => {
+        err && console.log(err);
+      });
     } else Alert.alert('No data to share!', 'Please enter a name and search');
   };
   return (
@@ -115,12 +108,13 @@ const App = () => {
         backgroundColor: '#e6d5c3',
       }}>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         style={{
           flex: 1,
           width: '95%',
           elevation: 3,
-          padding: 5,
           marginVertical: 10,
+          padding: 5,
           borderWidth: 0.1,
         }}>
         <Text
@@ -144,6 +138,7 @@ const App = () => {
               {cancelable: false},
             );
           }}
+          accessible
           style={{
             color: 'black',
             fontWeight: 'bold',
@@ -167,9 +162,9 @@ const App = () => {
             top: '12%',
           }}>
           <TextInput
-            // ref={ref => {
-            //   localInputRef && (localInputRef.current = ref);
-            // }}
+            ref={ref => {
+              localInputRef && (localInputRef.current = ref);
+            }}
             style={{
               width: '85%',
               borderColor: '#7ba6db',
@@ -180,7 +175,7 @@ const App = () => {
               color: 'black',
               marginVertical: 15,
             }}
-            placeholder="Enter your name..."
+            placeholder="Enter the name..."
             placeholderTextColor={'gray'}
             value={searchText}
             onChangeText={text => setSearchText(text)}
@@ -236,7 +231,7 @@ const App = () => {
                 left: '20%',
               }}
               onPress={() => {
-                ShareMessage(result);
+                ShareMessage();
                 Keyboard.dismiss();
               }}>
               <Text
