@@ -1,6 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {
   Alert,
+  FlatList,
   Keyboard,
   KeyboardAvoidingView,
   SafeAreaView,
@@ -12,6 +13,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import * as Progress from 'react-native-progress';
 import axios from 'axios';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -22,12 +24,17 @@ const BaseURL = 'https://api.nationalize.io/?name=';
 const App = () => {
   var lookup = require('country-data').lookup;
   const [searchText, setSearchText] = useState('');
-  const [result, setResult] = useState('');
+  const [ShareResult, setShareResult] = useState('');
+  const [ProgressBars, setProgressBars] = useState([]);
+  const [header, setHeader] = useState('');
   let tempText;
   let finalText = ' ';
+  let [text_array, settext_array] = useState([]);
+  const ProgressBarArray = [];
   const localInputRef = useRef < null || TextInput > null;
   // ctrl + shift + L ile o değişkenin olduğu herşeyi seçebilion
   // width : '50%' vermek text için split yani altından devam et anlamına geliyor
+  // terminal üzerinden  code .   yaparsan vs code üzerinden açıyor
   useEffect(() => {
     const keyboardDidHideSubscription = Keyboard.addListener(
       'keyboardDidHide',
@@ -41,11 +48,14 @@ const App = () => {
   const keyboardDidHideCallback = () => {
     localInputRef?.current?.blur();
   };
+
   const getData = async () => {
     if (searchText.length > 0) {
       try {
         const response = await axios.get(`${BaseURL}${searchText}`);
         const length = response.data.country.length;
+        ProgressBarArray.splice(0, ProgressBarArray.length);
+        settext_array([]);
         for (let i = 0; i < length; i++) {
           //rearrange the data
           if (
@@ -67,19 +77,38 @@ const App = () => {
             tempText.country +
             '\t  ' +
             tempText.probability +
+            '@' +
             '\n ';
+          ProgressBarArray.push(
+            Math.round(
+              tempText.probability.slice(0, -1) < 10
+                ? 1
+                : tempText.probability.slice(0, -1) / 10,
+            ),
+          );
         }
         if (finalText.includes('->')) {
-          setResult(
+          setShareResult(
             `\tname : ${searchText}\n\t\t\t\t` +
               'Nationality Results!\n' +
               finalText,
           );
-        } else {
-          setResult(
-            `\tname : ${searchText}\n\t` +
-              'No results found!\n\tPlease try again.',
+          setHeader(
+            `\tname : ${searchText}\n\t\t\t\t` + 'Nationality Results!\n',
           );
+          setProgressBars(ProgressBarArray);
+          text_array = finalText.split('@');
+          settext_array(text_array);
+        } else {
+          setShareResult(
+            `\tname : ${searchText}\n\t` +
+              'No Results found!\n\tPlease try again.',
+          );
+          setHeader(
+            `\tname : ${searchText}\n\n\t` +
+              '\t\tNo Results found!\n\t\t\tPlease try again.',
+          );
+          setProgressBars([]);
         }
         setSearchText('');
       } catch (error) {
@@ -89,10 +118,10 @@ const App = () => {
   };
 
   const ShareMessage = () => {
-    if (result.length > 0) {
+    if (ShareResult.length > 0) {
       const shareOptions = {
         title: 'Share via',
-        message: result,
+        message: ShareResult,
       };
       Share.open(shareOptions).catch(err => {
         err && console.log(err);
@@ -118,36 +147,80 @@ const App = () => {
           borderWidth: 0.1,
         }}>
         <Text
-          onLongPress={() => {
-            Alert.alert(
-              'Copy',
-              'Do you want to copy the result?',
-              [
-                {
-                  text: 'Cancel',
-                  onPress: () => console.log('Cancel Pressed'),
-                  style: 'cancel',
-                },
-                {
-                  text: 'Copy',
-                  onPress: () => {
-                    Clipboard.setString(result);
-                  },
-                },
-              ],
-              {cancelable: false},
-            );
-          }}
-          accessible
           style={{
             color: 'black',
             fontWeight: 'bold',
             fontSize: 22,
             letterSpacing: 1,
             lineHeight: 50,
+            top: '1%',
+            left: '1%',
           }}>
-          {result}
+          {header}
         </Text>
+        {ProgressBars && ProgressBars.length > 0
+          ? ProgressBars.map((item, index) => {
+              return (
+                <View
+                  key={index}
+                  style={{
+                    marginVertical: 12,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    bottom: '4%',
+                    flex: 1,
+                  }}>
+                  <Text
+                    onLongPress={() => {
+                      Alert.alert(
+                        'Copy',
+                        'Do you want to copy the Result?',
+                        [
+                          {
+                            text: 'Cancel',
+                            onPress: () => console.log('Cancel Pressed'),
+                            style: 'cancel',
+                          },
+                          {
+                            text: 'Copy',
+                            onPress: () => {
+                              Clipboard.setString(ShareResult);
+                            },
+                          },
+                        ],
+                        {cancelable: false},
+                      );
+                    }}
+                    accessible
+                    style={[
+                      {
+                        color: 'black',
+                        fontWeight: 'bold',
+                        fontSize: 22,
+                        letterSpacing: 1,
+                        lineHeight: 22,
+                        width: '75%',
+                        flex: 1,
+                      },
+                      index == 0 ? {top: '2%'} : {top: '0%'},
+                    ]}>
+                    {text_array[index]}
+                  </Text>
+                  <Progress.Bar
+                    style={{top: '2%', marginVertical: 5}}
+                    progress={item / 10}
+                    width={100}
+                    height={30}
+                    color={'#038cfc'}
+                    unfilledColor={'#e6d5c3'}
+                    borderColor={'#4d8ec4'}
+                    borderWidth={1}
+                  />
+                </View>
+              );
+            })
+          : console.log('null')}
       </ScrollView>
       <TouchableWithoutFeedback
         onPress={() => {
@@ -162,6 +235,7 @@ const App = () => {
             top: '12%',
           }}>
           <TextInput
+            autoCapitalize="none"
             ref={ref => {
               localInputRef && (localInputRef.current = ref);
             }}
@@ -259,4 +333,4 @@ const App = () => {
 
 const styles = StyleSheet.create({});
 
-export default App;
+export default React.memo(App);
