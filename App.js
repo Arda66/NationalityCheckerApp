@@ -35,6 +35,7 @@ const App = () => {
   // ctrl + shift + L ile o değişkenin olduğu herşeyi seçebilion
   // width : '50%' vermek text için split yani altından devam et anlamına geliyor
   // terminal üzerinden  code .   yaparsan vs code üzerinden açıyor
+  // margin kendi komşularını itmek için kullanılır, padding childları manipule etmek için border içi
   useEffect(() => {
     const keyboardDidHideSubscription = Keyboard.addListener(
       'keyboardDidHide',
@@ -77,7 +78,7 @@ const App = () => {
             tempText.country +
             '\t  ' +
             tempText.probability +
-            '@' +
+            '  <-' +
             '\n ';
           ProgressBarArray.push(
             Math.round(
@@ -87,7 +88,7 @@ const App = () => {
             ),
           );
         }
-        if (finalText.includes('->')) {
+        if (finalText.includes('->') && searchText.length > 1) {
           setShareResult(
             `\tname : ${searchText}\n\t\t\t\t` +
               'Nationality Results!\n' +
@@ -97,7 +98,7 @@ const App = () => {
             `\tname : ${searchText}\n\t\t\t\t` + 'Nationality Results!\n',
           );
           setProgressBars(ProgressBarArray);
-          text_array = finalText.split('@');
+          text_array = finalText.split('<-');
           settext_array(text_array);
         } else {
           setShareResult(
@@ -128,6 +129,26 @@ const App = () => {
       });
     } else Alert.alert('No data to share!', 'Please enter a name and search');
   };
+  const Copy = () => {
+    Alert.alert(
+      'Copy',
+      'Do you want to copy the Result?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {
+          text: 'Copy',
+          onPress: () => {
+            Clipboard.setString(ShareResult);
+          },
+        },
+      ],
+      {cancelable: false},
+    );
+  };
   return (
     <SafeAreaView
       style={{
@@ -152,9 +173,9 @@ const App = () => {
             fontWeight: 'bold',
             fontSize: 22,
             letterSpacing: 1,
-            lineHeight: 50,
-            top: '1%',
+            lineHeight: 40,
             left: '1%',
+            bottom: '1%',
           }}>
           {header}
         </Text>
@@ -168,29 +189,12 @@ const App = () => {
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    bottom: '4%',
+                    bottom: '10%',
                     flex: 1,
                   }}>
                   <Text
                     onLongPress={() => {
-                      Alert.alert(
-                        'Copy',
-                        'Do you want to copy the Result?',
-                        [
-                          {
-                            text: 'Cancel',
-                            onPress: () => console.log('Cancel Pressed'),
-                            style: 'cancel',
-                          },
-                          {
-                            text: 'Copy',
-                            onPress: () => {
-                              Clipboard.setString(ShareResult);
-                            },
-                          },
-                        ],
-                        {cancelable: false},
-                      );
+                      Copy();
                     }}
                     accessible
                     style={[
@@ -210,7 +214,7 @@ const App = () => {
                   <Progress.Bar
                     style={{top: '2%', marginVertical: 5}}
                     progress={item / 10}
-                    width={100}
+                    width={110}
                     height={30}
                     color={'#038cfc'}
                     unfilledColor={'#e6d5c3'}
@@ -297,12 +301,16 @@ const App = () => {
                 height: 75,
                 width: 100,
                 borderRadius: 20,
-                backgroundColor: 'green',
+                backgroundColor: '#4dc457',
                 justifyContent: 'center',
                 alignItems: 'center',
                 elevation: 3,
                 bottom: '17%',
                 left: '20%',
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 2},
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
               }}
               onPress={() => {
                 ShareMessage();
