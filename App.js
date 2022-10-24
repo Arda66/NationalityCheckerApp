@@ -1,12 +1,10 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {
   Alert,
-  FlatList,
   Keyboard,
   KeyboardAvoidingView,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -26,10 +24,10 @@ const App = () => {
   const [searchText, setSearchText] = useState('');
   const [ShareResult, setShareResult] = useState('');
   const [ProgressBars, setProgressBars] = useState([]);
-  const [header, setHeader] = useState('');
+  const [HeaderText, setHeaderText] = useState('');
   let tempText;
   let finalText = ' ';
-  let [text_array, settext_array] = useState([]);
+  let [text_array, setText_array] = useState([]);
   const ProgressBarArray = [];
   const localInputRef = useRef < null || TextInput > null;
   // ctrl + shift + L ile o değişkenin olduğu herşeyi seçebilion
@@ -41,7 +39,6 @@ const App = () => {
       'keyboardDidHide',
       keyboardDidHideCallback,
     );
-
     return () => {
       keyboardDidHideSubscription?.remove();
     };
@@ -49,14 +46,13 @@ const App = () => {
   const keyboardDidHideCallback = () => {
     localInputRef?.current?.blur();
   };
-
   const getData = async () => {
     if (searchText.length > 0) {
       try {
         const response = await axios.get(`${BaseURL}${searchText}`);
         const length = response.data.country.length;
         ProgressBarArray.splice(0, ProgressBarArray.length);
-        settext_array([]);
+        setText_array([]);
         for (let i = 0; i < length; i++) {
           //rearrange the data
           if (
@@ -94,18 +90,18 @@ const App = () => {
               'Nationality Results!\n' +
               finalText,
           );
-          setHeader(
+          setHeaderText(
             `\tname : ${searchText}\n\t\t\t\t` + 'Nationality Results!\n',
           );
           setProgressBars(ProgressBarArray);
           text_array = finalText.split('<-');
-          settext_array(text_array);
+          setText_array(text_array);
         } else {
           setShareResult(
             `\tname : ${searchText}\n\t` +
               'No Results found!\n\tPlease try again.',
           );
-          setHeader(
+          setHeaderText(
             `\tname : ${searchText}\n\n\t` +
               '\t\tNo Results found!\n\t\t\tPlease try again.',
           );
@@ -169,62 +165,68 @@ const App = () => {
         }}>
         <Text
           style={{
-            color: 'black',
+            color: '#211f1f',
             fontWeight: 'bold',
             fontSize: 22,
             letterSpacing: 1,
-            lineHeight: 40,
-            left: '1%',
-            bottom: '1%',
+            lineHeight: 35,
+            marginBottom: 5,
+            fontFamily: 'Montserrat-Regular',
+            textAlign: 'center',
+            alignItems: 'center',
+            textShadowOffset: {width: 0.8, height: 0.8},
+            textShadowRadius: 1,
+            textShadowColor: '#000',
+            marginRight: '15%',
           }}>
-          {header}
+          {HeaderText}
         </Text>
-        {ProgressBars && ProgressBars.length > 0
-          ? ProgressBars.map((item, index) => {
-              return (
-                <View
-                  key={index}
-                  style={{
-                    marginVertical: 12,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    bottom: '10%',
-                    flex: 1,
-                  }}>
-                  <Text
-                    onLongPress={() => {
-                      Copy();
-                    }}
-                    accessible
-                    style={[
-                      {
-                        color: 'black',
-                        fontWeight: 'bold',
-                        fontSize: 22,
-                        letterSpacing: 1,
-                        lineHeight: 22,
-                        width: '75%',
-                        flex: 1,
-                      },
-                      index == 0 ? {top: '2%'} : {top: '0%'},
-                    ]}>
-                    {text_array[index]}
-                  </Text>
-                  <Progress.Bar
-                    style={{top: '2%', marginVertical: 5}}
-                    progress={item / 10}
-                    width={110}
-                    height={30}
-                    color={'#038cfc'}
-                    unfilledColor={'#e6d5c3'}
-                    borderColor={'#4d8ec4'}
-                    borderWidth={1}
-                  />
-                </View>
-              );
-            })
-          : console.log('null')}
+        {ProgressBars.length > 0 &&
+          ProgressBars.map((item, index) => {
+            return (
+              <View
+                key={index}
+                style={{
+                  marginVertical: 8,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  bottom: '8%',
+                  flex: 1,
+                }}>
+                <Text
+                  onLongPress={() => {
+                    Copy();
+                  }}
+                  accessible
+                  style={[
+                    {
+                      color: 'black',
+                      fontWeight: 'bold',
+                      fontSize: 22,
+                      letterSpacing: 1,
+                      lineHeight: 22,
+                      width: '75%',
+                      flex: 1,
+                      fontFamily: 'Montserrat-SemiBold',
+                    },
+                    (style = {top: index == 0 ? '2%' : '0%'}),
+                  ]}>
+                  {text_array[index]}
+                </Text>
+                <Progress.Bar
+                  style={{top: '2%', marginVertical: 5}}
+                  progress={item / 10}
+                  width={110}
+                  height={30}
+                  color={'#038cfc'}
+                  unfilledColor={'#e6d5c3'}
+                  borderColor={'#4d8ec4'}
+                  borderWidth={1}
+                />
+              </View>
+            );
+          })}
       </ScrollView>
       <TouchableWithoutFeedback
         onPress={() => {
@@ -338,7 +340,5 @@ const App = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({});
 
 export default React.memo(App);
