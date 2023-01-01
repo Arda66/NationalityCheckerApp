@@ -47,9 +47,9 @@ const App = () => {
     localInputRef?.current?.blur();
   };
   const getData = async () => {
-    if (searchText.length > 0) {
+    if (searchText.trim().length > 0) {
       try {
-        const response = await axios.get(`${BaseURL}${searchText}`);
+        const response = await axios.get(`${BaseURL}${searchText.trim()}`);
         const length = response.data.country.length;
         ProgressBarArray.splice(0, ProgressBarArray.length);
         setText_array([]);
@@ -86,23 +86,24 @@ const App = () => {
         }
         if (finalText.includes('->') && searchText.length > 1) {
           setShareResult(
-            `\tname : ${searchText}\n\t\t\t\t` +
+            `\tname : ${searchText.trim()}\n\t\t\t\t` +
               'Nationality Results!\n' +
               finalText,
           );
           setHeaderText(
-            `\tname : ${searchText}\n\t\t\t\t` + 'Nationality Results!\n',
+            `\tname : ${searchText.trim()}\n\t\t\t\t` +
+              'Nationality Results!\n',
           );
           setProgressBars(ProgressBarArray);
           text_array = finalText.split('<-');
           setText_array(text_array);
         } else {
           setShareResult(
-            `\tname : ${searchText}\n\t` +
+            `\tname : ${searchText.trim()}\n\t` +
               'No Results found!\n\tPlease try again.',
           );
           setHeaderText(
-            `\tname : ${searchText}\n\n\t` +
+            `\tname : ${searchText.trim()}\n\n\t` +
               '\t\tNo Results found!\n\t\t\tPlease try again.',
           );
           setProgressBars([]);
