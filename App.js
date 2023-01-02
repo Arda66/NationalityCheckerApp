@@ -49,7 +49,6 @@ const App = () => {
   const getData = async () => {
     if (searchText.trim().length > 0) {
       try {
-        console.log(searchText.trim().split(' ')[0]);
         const response = await axios.get(
           `${BaseURL}${searchText.trim().split(' ')[0]}`,
         );
@@ -89,7 +88,7 @@ const App = () => {
         }
         if (finalText.includes('->') && searchText.length > 1) {
           setShareResult(
-            `\tname : ${searchText.trim().split(' ')[0]}\n\t\t\t\t` +
+            `\tname : ${searchText.trim()}\n\t\t\t\t` +
               'Nationality Results!\n' +
               finalText,
           );
@@ -102,7 +101,7 @@ const App = () => {
           setText_array(text_array);
         } else {
           setShareResult(
-            `\tname : ${searchText.trim().split(' ')[0]}\n\t` +
+            `\tname : ${searchText.trim()}\n\t` +
               'No Results found!\n\tPlease try again.',
           );
           setHeaderText(
@@ -181,9 +180,9 @@ const App = () => {
             textShadowOffset: {width: 0.8, height: 0.8},
             textShadowRadius: 1,
             textShadowColor: '#000',
-            marginRight: '15%',
+            marginRight: '5%',
           }}>
-          {HeaderText}
+          {HeaderText ? HeaderText : 'Enter a name and search.'}
         </Text>
         {ProgressBars.length > 0 &&
           ProgressBars.map((item, index) => {
@@ -320,6 +319,7 @@ const App = () => {
               }}
               onPress={() => {
                 ShareMessage();
+                console.log(ShareResult);
                 Keyboard.dismiss();
               }}>
               <Text
