@@ -49,7 +49,10 @@ const App = () => {
   const getData = async () => {
     if (searchText.trim().length > 0) {
       try {
-        const response = await axios.get(`${BaseURL}${searchText.trim()}`);
+        console.log(searchText.trim().split(' ')[0]);
+        const response = await axios.get(
+          `${BaseURL}${searchText.trim().split(' ')[0]}`,
+        );
         const length = response.data.country.length;
         ProgressBarArray.splice(0, ProgressBarArray.length);
         setText_array([]);
@@ -86,7 +89,7 @@ const App = () => {
         }
         if (finalText.includes('->') && searchText.length > 1) {
           setShareResult(
-            `\tname : ${searchText.trim()}\n\t\t\t\t` +
+            `\tname : ${searchText.trim().split(' ')[0]}\n\t\t\t\t` +
               'Nationality Results!\n' +
               finalText,
           );
@@ -99,7 +102,7 @@ const App = () => {
           setText_array(text_array);
         } else {
           setShareResult(
-            `\tname : ${searchText.trim()}\n\t` +
+            `\tname : ${searchText.trim().split(' ')[0]}\n\t` +
               'No Results found!\n\tPlease try again.',
           );
           setHeaderText(
@@ -211,7 +214,7 @@ const App = () => {
                       flex: 1,
                       fontFamily: 'Montserrat-SemiBold',
                     },
-                    (style = {top: index == 0 ? '2%' : '0%'}),
+                    {top: index == 0 ? '2%' : '0%'},
                   ]}>
                   {text_array[index]}
                 </Text>
